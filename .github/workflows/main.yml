@@ -26,7 +26,10 @@ jobs:
         run: pip install requests beautifulsoup4
 
       - name: 🚀 Ejecutar Bot Pollito
-        run: python bot_mangel.py
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+        run: python main.py
 
       - name: 💾 Guardar memoria para la próxima vez
         run: |
