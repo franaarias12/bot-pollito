@@ -5,8 +5,8 @@ import json
 import os
 
 # --- CONFIGURACIÓN ---
-TOKEN = '8799696387:AAERU_mzdPlxuE1eYf69__4KdeEPipRMdYw'
-CHAT_ID = '5477918584'
+TOKEN = os.environ.get('TELEGRAM_TOKEN')
+CHAT_ID = os.environ.get('CHAT_ID')
 ARCHIVO_MEMORIA = 'memoria_pollito.json'
 
 URLS = {
