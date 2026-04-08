@@ -1,40 +1,27 @@
 name: Despertador Pollito 🐥
-
 on:
   schedule:
-    # Esto significa "Ejecutar cada 6 horas"
     - cron: '0 */6 * * *'
-  workflow_dispatch: # Esto te pone un botón para que lo puedas encender tú a mano cuando quieras
-
+  workflow_dispatch:
 permissions:
-  contents: write # Permite al bot guardar su libreta de memoria
-
+  contents: write
 jobs:
   vigilar_plazas:
     runs-on: ubuntu-latest
-
     steps:
-      - name: 📥 Descargar código
-        uses: actions/checkout@v3
-
-      - name: 🐍 Configurar Python
-        uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-
-      - name: 📦 Instalar herramientas
-        run: pip install requests beautifulsoup4
-
-      - name: 🚀 Ejecutar Bot Pollito
+      - run: pip install requests beautifulsoup4
+      - name: 🚀 Ejecutar Bot
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-          CHAT_ID: ${{ secrets.CHAT_ID }}
-        run: python main.py
-
-      - name: 💾 Guardar memoria para la próxima vez
+        run: python bot_mangel.py
+      - name: 💾 Guardar memoria
         run: |
           git config --global user.name 'Bot Pollito'
           git config --global user.email 'pollito@bot.com'
-          git add memoria_pollito.json || echo "Primera vez"
-          git commit -m "Actualizar libreta de plazas" || echo "Sin cambios nuevos"
-          git push || echo "Listo"
+          git add memoria_pollito.json
+          git commit -m "Actualizar libreta" || exit 0
+          git push
