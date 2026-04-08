@@ -22,16 +22,16 @@ URLS = {
 PALABRAS_CLAVE = ["economia", "ade", "empresa", "contabilidad", "finanzas", "marketing", "derecho", "civil", "penal", "administrativo", "laboral", "mercantil", "fol", "secundaria", "fp", "interino", "sustituto", "convocatoria", "bolsa", "sipri"]
 
 def cargar_datos():
-    if os.path.exists(ARCHIVO_MEMORIA):
-        try:
-            with open(ARCHIVO_MEMORIA, 'r') as f:
-                d = json.load(f)
-                d["enlaces"] = {k: set(v) for k, v in d.get("enlaces", {}).items()}
-                if "usuarios" not in d: d["usuarios"] = []
-                return d
-        except:
-            return {"enlaces": {}, "usuarios": []}
-    return {"enlaces": {}, "usuarios": []}
+    vacio = {"enlaces": {}, "usuarios": []}
+    if not os.path.exists(ARCHIVO_MEMORIA): return vacio
+    try:
+        with open(ARCHIVO_MEMORIA, 'r') as f:
+            d = json.load(f)
+            if "enlaces" not in d: d["enlaces"] = {}
+            if "usuarios" not in d: d["usuarios"] = []
+            d["enlaces"] = {k: set(v) for k, v in d["enlaces"].items()}
+            return d
+    except: return vacio
 
 def guardar_datos(datos):
     with open(ARCHIVO_MEMORIA, 'w') as f:
@@ -39,9 +39,9 @@ def guardar_datos(datos):
 
 def obtener_nuevos_usuarios(usuarios_existentes):
     url = f"https://api.telegram.org/bot{TOKEN}/getUpdates"
-    nuevos = []
     try:
         r = requests.get(url).json()
+        nuevos = []
         if r.get("ok"):
             for u in r["result"]:
                 if "message" in u and "text" in u["message"]:
@@ -54,18 +54,16 @@ def obtener_nuevos_usuarios(usuarios_existentes):
 def enviar_mensaje(chat_id, texto):
     requests.post(f"https://api.telegram.org/bot{TOKEN}/sendMessage", data={'chat_id': chat_id, 'text': texto, 'parse_mode': 'Markdown'})
 
-# --- LÓGICA ---
+# --- EJECUCIÓN ---
 datos = cargar_datos()
 hubo_cambios = False
 
-# Registro automático de Mangel
 nuevos = obtener_nuevos_usuarios(datos["usuarios"])
 for n in nuevos:
     datos["usuarios"].append(n)
     hubo_cambios = True
-    enviar_mensaje(n, "🐣 *¡Hola mi Pollito!* ✨\n\nTu bot personal ya está activado. Vigilando plazas de *ADE* 📊 y *Derecho* ⚖️ las 24h.\n\n¡Tú puedes con todo! 💛")
+    enviar_mensaje(n, "🐣 *¡Hola mi Pollito!* ✨\n\nTu bot personal ya está activado. Vigilando plazas de *ADE* 📊 y *Derecho* ⚖️.\n\n¡Te quiero! 💛")
 
-# Rastreo de plazas
 for nombre, url in URLS.items():
     try:
         res = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=20)
@@ -82,7 +80,7 @@ for nombre, url in URLS.items():
         else:
             nuevos_links = enlaces_encontrados - datos["enlaces"][nombre]
             if nuevos_links:
-                msg = f"🐥 *¡Pío pío! Novedades en {nombre}* ✨\n\n" + "\n".join([f"💛 [Enlace]({l})" for l in list(nuevos_links)[:5]])
+                msg = f"🐥 *Novedades en {nombre}* ✨\n\n" + "\n".join([f"💛 [Link]({l})" for l in list(nuevos_links)[:5]])
                 for u in datos["usuarios"]: enviar_mensaje(u, msg)
                 datos["enlaces"][nombre] = enlaces_encontrados
                 hubo_cambios = True
